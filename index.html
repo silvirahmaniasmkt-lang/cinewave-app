@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineWave - Viu Style Movie Stream</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        viu: {
+                            gold: '#FFB800',
+                            darkGold: '#D99B00',
+                            dark: '#111319',
+                            card: '#1A1D26',
+                            border: '#2A2E3D'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Alpine.js CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+
+<body
+    class="bg-viu-dark text-slate-100 font-sans min-h-screen selection:bg-viu-gold selection:text-black relative overflow-x-hidden"
+    x-data="movieApp()" x-init="init()">
+
+    <!-- Viu Style Yellow Ambient Glow Background -->
+    <div
+        class="fixed -top-40 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] bg-gradient-to-b from-viu-gold/15 via-yellow-600/5 to-transparent blur-[140px] pointer-events-none -z-10">
+    </div>
+
+    <!-- Header / Navbar Viu Style -->
+    <header class="sticky top-0 z-40 bg-viu-dark/95 backdrop-blur-md border-b border-viu-border/80">
+        <div class="container mx-auto px-4 md:px-8 py-3.5 flex flex-col md:flex-row justify-between items-center gap-4">
+
+            <!-- Brand Logo -->
+            <div @click="resetFilters()" class="flex items-center gap-2.5 cursor-pointer group">
+                <div
+                    class="w-10 h-10 rounded-xl bg-viu-gold flex items-center justify-center shadow-lg shadow-viu-gold/20 group-hover:scale-105 transition duration-300">
+                    <span class="text-xl font-black text-black">V</span>
+                </div>
+                <div>
+                    <span class="text-2xl font-black tracking-tight text-white">
+                        Cine<span class="text-viu-gold">Wave</span>
+                    </span>
+                    <span class="block text-[9px] font-black text-viu-gold -mt-1 tracking-[0.25em] uppercase">Viu
+                        Edition</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <!-- Search Input -->
+                <form @submit.prevent="searchMovies()" class="relative w-full md:w-80">
+                    <input type="text" x-model="searchQuery" placeholder="Cari drama & film..."
+                        class="w-full pl-11 pr-20 py-2.5 rounded-full bg-viu-card border border-viu-border text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-viu-gold transition duration-300 shadow-inner">
+                    <svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <button type="submit"
+                        class="absolute right-1.5 top-1/2 -translate-y-1/2 bg-viu-gold hover:bg-viu-darkGold text-black font-bold text-xs px-3 py-1.5 rounded-full transition duration-300 active:scale-95">
+                        Cari
+                    </button>
+                </form>
+
+                <!-- Tombol More APK (Dropdown Menu) -->
+                <div class="relative" x-data="{ openMoreApk: false }">
+                    <button @click="openMoreApk = !openMoreApk" @click.outside="openMoreApk = false"
+                        class="flex items-center gap-2 bg-viu-card hover:bg-slate-800 border border-viu-border text-slate-200 text-xs font-bold px-4 py-2.5 rounded-full transition duration-300 whitespace-nowrap active:scale-95 shadow-md">
+                        <span>📱 More APK</span>
+                        <span class="text-[10px]" x-text="openMoreApk ? '▲' : '▼'"></span>
+                    </button>
+
+                    <!-- Dropdown List APK -->
+                    <div x-show="openMoreApk" x-transition
+                        class="absolute right-0 mt-2 w-56 bg-viu-card rounded-2xl border border-viu-border shadow-2xl p-2 z-50"
+                        style="display: none;">
+                        <div
+                            class="px-3 py-2 border-b border-viu-border text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            Aplikasi Rekomendasi
+                        </div>
+                        <a href="#"
+                            class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 transition text-xs text-slate-200">
+                            <span class="text-base">📺</span>
+                            <div>
+                                <p class="font-bold">AnimeStream</p>
+                                <p class="text-[10px] text-slate-400">Nonton Anime HD Sub Indo</p>
+                            </div>
+                        </a>
+                        <a href="#"
+                            class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 transition text-xs text-slate-200">
+                            <span class="text-base">📻</span>
+                            <div>
+                                <p class="font-bold">Musicify</p>
+                                <p class="text-[10px] text-slate-400">Streaming Musik Gratis</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Section Container -->
+    <main class="container mx-auto px-4 md:px-8 py-8">
+
+        <!-- Filter Toolbar Viu Style -->
+        <div
+            class="bg-viu-card p-5 rounded-2xl mb-8 border border-viu-border flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-xl">
+            <div>
+                <h2 class="text-xl md:text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                    <span class="w-2 h-6 bg-viu-gold rounded-full inline-block"></span>
+                    <span x-text="sectionTitle"></span>
+                </h2>
+                <p class="text-slate-400 text-xs mt-1">Koleksi tontonan populer kualitas terbaik di Viu.</p>
+            </div>
+
+            <!-- Filter Options -->
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center gap-2 bg-viu-dark border border-viu-border px-3 py-2 rounded-xl">
+                    <span class="text-xs text-slate-400 font-semibold">📅 Tahun:</span>
+                    <select x-model="selectedYear"
+                        class="bg-transparent text-xs text-slate-200 font-medium focus:outline-none cursor-pointer">
+                        <option value="" class="bg-viu-dark text-white">Semua</option>
+                        <template x-for="year in availableYears" :key="year">
+                            <option :value="year" x-text="year" class="bg-viu-dark text-white"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2 bg-viu-dark border border-viu-border px-3 py-2 rounded-xl">
+                    <span class="text-xs text-viu-gold font-semibold">⭐ Rating:</span>
+                    <select x-model="minRating"
+                        class="bg-transparent text-xs text-slate-200 font-medium focus:outline-none cursor-pointer">
+                        <option value="0" class="bg-viu-dark text-white">Semua</option>
+                        <option value="7" class="bg-viu-dark text-white">7+ Star</option>
+                        <option value="8" class="bg-viu-dark text-white">8+ Star</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2 bg-viu-dark border border-viu-border px-3 py-2 rounded-xl">
+                    <span class="text-xs text-slate-400 font-semibold">🔀 Urutan:</span>
+                    <select x-model="sortBy"
+                        class="bg-transparent text-xs text-slate-200 font-medium focus:outline-none cursor-pointer">
+                        <option value="popular" class="bg-viu-dark text-white">Populer</option>
+                        <option value="rating_desc" class="bg-viu-dark text-white">Rating Tertinggi</option>
+                    </select>
+                </div>
+
+                <button x-show="searchQuery !== '' || selectedYear !== '' || minRating !== '0' || sortBy !== 'popular'"
+                    @click="resetFilters()"
+                    class="text-xs text-viu-gold hover:underline font-bold px-3 py-2 rounded-xl">
+                    ✕ Reset Filter
+                </button>
+            </div>
+        </div>
+
+        <!-- Skeleton Loading -->
+        <div x-show="loading" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            <template x-for="i in 10">
+                <div class="bg-viu-card rounded-2xl p-3 border border-viu-border animate-pulse">
+                    <div class="w-full h-72 bg-slate-800 rounded-xl mb-3"></div>
+                    <div class="h-4 bg-slate-800 rounded w-3/4 mb-2"></div>
+                    <div class="h-3 bg-slate-800 rounded w-1/2"></div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="!loading && processedMovies.length === 0"
+            class="bg-viu-card rounded-3xl p-12 text-center my-12 max-w-lg mx-auto border border-viu-border">
+            <div
+                class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-viu-dark border border-viu-border flex items-center justify-center text-3xl">
+                🎬</div>
+            <h3 class="text-xl font-bold text-white mb-2">Film Tidak Ditemukan</h3>
+            <p class="text-slate-400 text-sm mb-6">Tidak ada tayangan yang sesuai dengan filter kamu.</p>
+            <button @click="resetFilters()"
+                class="bg-viu-gold text-black font-bold text-xs px-6 py-3 rounded-full shadow-lg shadow-viu-gold/20">
+                Reset Filter
+            </button>
+        </div>
+
+        <!-- Movie Cards Grid Viu Style -->
+        <div x-show="!loading && processedMovies.length > 0"
+            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            <template x-for="movie in processedMovies" :key="movie.id">
+                <div @click="openDetail(movie.id)"
+                    class="group bg-viu-card rounded-2xl p-2.5 border border-viu-border hover:border-viu-gold/80 hover:shadow-2xl hover:shadow-viu-gold/10 hover:-translate-y-1.5 transition-all duration-300 cursor-pointer flex flex-col justify-between">
+                    <div class="relative overflow-hidden rounded-xl mb-3 aspect-[2/3] bg-slate-900">
+                        <img :src="movie.poster_path ? 'https://image.tmdb.org/t/p/w500' + movie.poster_path : 'https://via.placeholder.com/500x750?text=No+Poster'"
+                            :alt="movie.title"
+                            class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                            loading="lazy">
+                        <!-- Viu Yellow Badge Tag -->
+                        <div
+                            class="absolute top-2.5 left-2.5 bg-viu-gold text-black text-[10px] font-black px-2 py-0.5 rounded shadow-md tracking-wider uppercase">
+                            VIU EXCLUSIVE
+                        </div>
+                        <!-- Rating Badge -->
+                        <div
+                            class="absolute top-2.5 right-2.5 bg-black/80 backdrop-blur-md px-2 py-1 rounded-lg text-xs font-bold text-viu-gold flex items-center gap-1">
+                            ⭐ <span x-text="movie.vote_average ? movie.vote_average.toFixed(1) : '0'"></span>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 flex flex-col justify-between px-1 pb-1">
+                        <h3 class="font-bold text-sm text-slate-100 group-hover:text-viu-gold transition line-clamp-1 mb-1"
+                            x-text="movie.title"></h3>
+                        <div class="flex justify-between items-center text-xs text-slate-400">
+                            <span x-text="movie.release_date ? movie.release_date.substring(0, 4) : 'TBA'"></span>
+                            <span class="text-viu-gold font-bold text-[10px] uppercase">SUB INDO</span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Tombol "Muat Lebih Banyak Film" di Halaman Utama -->
+        <div x-show="!loading && processedMovies.length > 0 && currentPage < totalPages" class="text-center mt-12 mb-8">
+            <button @click="loadMoreMovies()" :disabled="loadingMore"
+                class="bg-viu-card hover:bg-slate-800 border border-viu-gold text-viu-gold font-extrabold text-sm px-8 py-3.5 rounded-full transition-all duration-300 shadow-lg shadow-viu-gold/10 hover:shadow-viu-gold/20 hover:scale-105 active:scale-95 disabled:opacity-50">
+                <span x-show="!loadingMore">➕ Muat Lebih Banyak Film</span>
+                <span x-show="loadingMore" class="flex items-center justify-center gap-2">
+                    <span
+                        class="w-4 h-4 border-2 border-viu-gold border-t-transparent rounded-full animate-spin"></span>
+                    <span>Memuat Film Baru...</span>
+                </span>
+            </button>
+        </div>
+    </main>
+
+    <!-- Modal Detail Film Viu Style -->
+    <div x-show="showModal" x-transition
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 bg-black/85 backdrop-blur-md overflow-y-auto"
+        style="display: none;">
+        <div @click.away="showModal = false"
+            class="bg-viu-card rounded-3xl max-w-3xl w-full p-6 md:p-8 relative border border-viu-border shadow-2xl overflow-hidden my-auto">
+            <button @click="showModal = false"
+                class="absolute top-4 right-4 w-9 h-9 rounded-full bg-viu-dark hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition z-10 border border-viu-border">
+                ✕
+            </button>
+
+            <div x-show="loadingDetail" class="flex flex-col items-center justify-center py-20">
+                <div class="w-12 h-12 border-4 border-viu-gold border-t-transparent rounded-full animate-spin mb-4">
+                </div>
+                <p class="text-sm text-slate-400 font-medium">Menyiapkan Putar Film...</p>
+            </div>
+
+            <div x-show="!loadingDetail && selectedMovie" class="flex flex-col md:flex-row gap-6 md:gap-8">
+                <div class="w-full md:w-5/12 flex-shrink-0">
+                    <img :src="selectedMovie?.poster_path ? 'https://image.tmdb.org/t/p/w500' + selectedMovie.poster_path : 'https://via.placeholder.com/500x750?text=No+Poster'"
+                        :alt="selectedMovie?.title"
+                        class="w-full rounded-2xl object-cover shadow-2xl border border-viu-border">
+                </div>
+
+                <div class="flex-1 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span
+                                class="bg-viu-gold text-black text-[10px] font-black px-2.5 py-0.5 rounded uppercase tracking-wider">VIU
+                                ORIGINAL</span>
+                            <span class="text-slate-400 text-xs">FHD Subtitle Indonesia</span>
+                        </div>
+                        <h2 class="text-2xl md:text-3xl font-black text-white mb-2 leading-tight"
+                            x-text="selectedMovie?.title"></h2>
+
+                        <div class="flex flex-wrap items-center gap-2 mb-4 text-xs text-slate-300">
+                            <span
+                                class="bg-viu-gold/10 border border-viu-gold/30 text-viu-gold font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                                ⭐ <span
+                                    x-text="selectedMovie?.vote_average ? selectedMovie.vote_average.toFixed(1) : '0'"></span>
+                            </span>
+                            <span class="bg-viu-dark border border-viu-border px-3 py-1 rounded-full font-medium">
+                                📅 <span x-text="selectedMovie?.release_date || 'N/A'"></span>
+                            </span>
+                            <template x-if="selectedMovie?.runtime">
+                                <span class="bg-viu-dark border border-viu-border px-3 py-1 rounded-full font-medium">
+                                    ⏱️ <span x-text="selectedMovie.runtime + ' Menit'"></span>
+                                </span>
+                            </template>
+                        </div>
+
+                        <template x-if="selectedMovie?.genres">
+                            <div class="flex flex-wrap gap-2 mb-6">
+                                <template x-for="genre in selectedMovie.genres" :key="genre.id">
+                                    <span
+                                        class="text-[11px] bg-viu-dark border border-viu-border text-slate-300 font-semibold px-2.5 py-0.5 rounded-lg"
+                                        x-text="genre.name"></span>
+                                </template>
+                            </div>
+                        </template>
+
+                        <h3 class="font-bold text-xs text-slate-400 uppercase tracking-widest mb-2">Ringkasan Cerita
+                        </h3>
+                        <p class="text-slate-300 text-sm leading-relaxed mb-6"
+                            x-text="selectedMovie?.overview || 'Tidak ada ringkasan cerita resmi.'"></p>
+
+                        <!-- Fitur Video & Trailer Lainnya di Modal -->
+                        <div class="mb-6">
+                            <template x-if="allVideos.length > 0">
+                                <div>
+                                    <div class="flex justify-between items-center mb-3">
+                                        <h3 class="font-bold text-xs text-slate-400 uppercase tracking-widest">
+                                            🎬 Trailer & Video Clip (<span x-text="visibleVideos.length"></span> dari
+                                            <span x-text="allVideos.length"></span>)
+                                        </h3>
+
+                                        <template x-if="hasMoreVideos">
+                                            <button @click="loadMoreVideos()"
+                                                class="text-[11px] font-bold text-viu-gold hover:underline bg-viu-gold/10 border border-viu-gold/30 px-3 py-1 rounded-lg transition active:scale-95">
+                                                + Muat 6 Video Lagi
+                                            </button>
+                                        </template>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-64 overflow-y-auto pr-1">
+                                        <template x-for="vid in visibleVideos" :key="vid.id">
+                                            <a :href="'https://www.youtube.com/watch?v=' + vid.key" target="_blank"
+                                                class="bg-viu-dark border border-viu-border hover:border-viu-gold p-2.5 rounded-xl flex items-center gap-3 text-xs transition group">
+                                                <span
+                                                    class="text-viu-gold font-bold text-base group-hover:scale-110 transition">▶</span>
+                                                <div class="overflow-hidden">
+                                                    <p class="font-semibold text-slate-200 truncate" x-text="vid.name">
+                                                    </p>
+                                                    <p class="text-[10px] text-slate-400 uppercase font-mono"
+                                                        x-text="vid.type"></p>
+                                                </div>
+                                            </a>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template x-if="allVideos.length === 0">
+                                <div class="bg-viu-dark border border-viu-border p-3.5 rounded-xl text-center">
+                                    <p class="text-xs text-slate-400">⚠️ Belum ada video trailer resmi yang tersedia
+                                        untuk film ini di TMDB.</p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Viu Yellow Play Button Utama -->
+                    <template x-if="trailerKey">
+                        <a :href="'https://www.youtube.com/watch?v=' + trailerKey" target="_blank"
+                            class="inline-flex items-center justify-center gap-2 bg-viu-gold hover:bg-viu-darkGold text-black px-6 py-3.5 rounded-full font-black text-sm shadow-xl shadow-viu-gold/20 hover:scale-[1.02] active:scale-95 transition duration-300">
+                            <span class="text-lg">▶</span>
+                            <span>Putar Trailer Youtube</span>
+                        </a>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="app.js"></script>
+</body>
+
+</html>
